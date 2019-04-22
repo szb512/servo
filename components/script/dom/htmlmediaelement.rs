@@ -71,7 +71,7 @@ use script_layout_interface::HTMLMediaData;
 use servo_config::pref;
 use servo_media::player::frame::{Frame, FrameRenderer};
 use servo_media::player::{PlaybackState, Player, PlayerError, PlayerEvent, StreamType};
-use servo_media::ServoMedia;
+use servo_media::{ServoMedia, SupportsMediaType};
 use servo_url::ServoUrl;
 use std::cell::Cell;
 use std::collections::VecDeque;
@@ -1673,7 +1673,11 @@ impl HTMLMediaElementMethods for HTMLMediaElement {
                 CanPlayTypeResult::_empty
             },
             Err(_) => CanPlayTypeResult::_empty,
-            _ => CanPlayTypeResult::Maybe,
+            _ => match ServoMedia::get().unwrap().can_play_type(&type_) {
+                SupportsMediaType::No => CanPlayTypeResult::_empty,
+                SupportsMediaType::Maybe => CanPlayTypeResult::Maybe,
+                SupportsMediaType::Probably => CanPlayTypeResult::Probably,
+            },
         }
     }
 
